@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Paddle Game</title>
+  </head>
+  
+  <body>
+    <!-- Game Canvas Where Game Takes Place -->
+    <canvas id = "gameCanvas" width = "800" height = "600"></canvas>
+    
+    <script>
+      //Variables for Canvas and Canvas Context
+      let canvas;
+      let canvasContext;
+      //Variables for Ball Position and Ball Speed
+      let ballX = 50;
+      let ballY = 50;
+      let ballSpeedX = 10;
+      let ballSpeedY = 4;
+      //Variables for Paddles 1 & 2
+      let paddle1Y = 250;
+      let paddle2Y = 250;
+      const paddleWidth = 10;
+      const paddleHeight = 100;
+      
+      //Function Calculates Mouse Position
+      function calcMousePos(evt) {
+        let rect = canvas.getBoundingClientRect();
+        let root = document.documentElement;
+        let mouseX = evt.clientX - rect.left - root.scrollLeft;
+        let mouseY = evt.clientY - rect.top - root.scrollTop;
+        return {
+          x: mouseX,
+          y: mouseY
+        };
+      }
+      
+      //This Function Only Runs Once Window is Loaded
+      window.onload = function() {
+        canvas = document.querySelector("#gameCanvas");
+        canvasContext = canvas.getContext("2d");
+        
+        //Frames per Second
+        let fps = 30;
+        //Performs Move and Draw Functions 1000/fps times per second (1000 Millisec = 1 sec)
+        setInterval(function() {
+          move();
+          draw();
+        }, 1000/fps)
+        
+        //Adjusts paddle1Y with calcMousePos function
+        canvas.addEventListener("mousemove", function(evt) {
+          let mousePos = calcMousePos(evt);
+          paddle2Y = mousePos.y - (paddleHeight/2);
+        });
+      }
+      
+      //Function to Draw Rectangles/Paddles
+      function colorRect(leftX, topY, width, height, drawColor) {
+        canvasContext.fillStyle = drawColor;
+        canvasContext.fillRect(leftX, topY, width, height);
+      }
+      
+      //Function to Draw Circle
+      function colorCirc(centerX, centerY, radius, drawColor) {
+        canvasContext.fillStyle = drawColor;
+        canvasContext.beginPath();
+        canvasContext.arc(centerX, centerY, radius, 0, Math.PI*2, true);
+        canvasContext.fill();
+      }
+      
+      //Draws Items on Canvas (Background, Paddles, Ball)
+      function draw() {
+        //Background/Canvas
+        colorRect(0, 0, canvas.width, canvas.height, "blue");
+        //Player 1 Paddle
+        colorRect(0, paddle1Y, paddleWidth, paddleHeight, "white");
+        //Player 2/Computer Paddle
+        colorRect(canvas.width-paddleWidth, paddle2Y, paddleWidth, paddleHeight, "white");
+        //Ball
+        colorCirc(ballX, ballY, 10, "white");
+      }
+      
+      //Resets ball to Middle of Canvas
+      function ballReset() {
+        ballSpeedX = -ballSpeedX;
+        ballX = canvas.width/2;
+        ballY = canvas.height/2;
+      }
+      
+      //Moves Ball and Sets Bounds for Bouncing of Ball
+      function move() {
+        ballX = ballX + ballSpeedX;
+        ballY = ballY + ballSpeedY;
+        
+        if(ballX < 0) {
+          if(ballY > paddle1Y && ballY < paddle1Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+          } else {
+            ballReset();
+          }
+        }
+        
+        if(ballX > canvas.width) {
+          ballSpeedX = -ballSpeedX;
+        }
+        
+        if(ballY < 0) {
+          ballSpeedY = -ballSpeedY
+        }
+        
+        if(ballY > canvas.height) {
+          ballSpeedY = -ballSpeedY
+        }
+      }
+      
+    </script>
+  </body>
+</html>

@@ -17,11 +17,20 @@
       let ballY = 50;
       let ballSpeedX = 10;
       let ballSpeedY = 4;
-      //Variables for Paddles 1 & 2
+      //Variables for Paddles for Players 1 & 2/Computer
       let paddle1Y = 250;
       let paddle2Y = 250;
       const paddleWidth = 10;
       const paddleHeight = 100;
+      //Variable for difficulty of game
+      let difficulty = window.prompt("How difficult would you like it to be? Easy - Medium - Hard - Impossible");
+      //Variables for Player Scores
+      let player1Score = 0;
+      let player2Score = 0;
+      //Constant for Winning Score
+      let winScore = window.prompt("What would you like the winning score to be? (Multiples of 10)");
+      
+      
       
       //Function Calculates Mouse Position
       function calcMousePos(evt) {
@@ -33,6 +42,45 @@
           x: mouseX,
           y: mouseY
         };
+      }
+      
+      //Calculates chase of ball for the Computer/Player 2 Paddle
+      function calcMovement() {
+        //Calculate paddle center
+        let paddle2Cent = paddle2Y + (paddleHeight/2);
+        
+        
+        //Select Difficulty
+        if(difficulty == "easy") {
+          //Ignore ball movement within 35 pixels of paddle (Removes shakiness from Paddle Movement)
+           if(paddle2Cent < ballY - 35) {
+            paddle2Y += 1;
+          } else if(paddle2Cent > ballY + 35){
+            paddle2Y -= 1;
+          }
+        } else if (difficulty == "medium") {
+          if(paddle2Cent < ballY - 35) {
+            paddle2Y += 3;
+          } else if(paddle2Cent > ballY + 35){
+            paddle2Y -= 3;
+          }
+        } else if (difficulty == "hard") {
+          if(paddle2Cent < ballY - 35) {
+            paddle2Y += 5;
+          } else if(paddle2Cent > ballY + 35){
+            paddle2Y -= 5;
+          }
+        } else if (difficulty == "impossible") {
+          if(paddle2Cent < ballY - 35) {
+            paddle2Y += 7;
+            
+          } else if(paddle2Cent > ballY + 35){
+            paddle2Y -= 7;
+          }
+        } else {
+          alert("Not a proper difficulty! Try again");
+          difficulty = window.prompt("What difficulty would you like? Easy - Medium - Hard - Impossible");
+        }
       }
       
       //This Function Only Runs Once Window is Loaded
@@ -51,7 +99,7 @@
         //Adjusts paddle1Y with calcMousePos function
         canvas.addEventListener("mousemove", function(evt) {
           let mousePos = calcMousePos(evt);
-          paddle2Y = mousePos.y - (paddleHeight/2);
+          paddle1Y = mousePos.y - (paddleHeight/2);
         });
       }
       
@@ -79,10 +127,21 @@
         colorRect(canvas.width-paddleWidth, paddle2Y, paddleWidth, paddleHeight, "white");
         //Ball
         colorCirc(ballX, ballY, 10, "white");
+        //Player 1 Score
+        canvasContext.fillText(player1Score, 100, 100);
+        //Player 2 Score
+        canvasContext.fillText(player2Score, canvas.width-100, 100);
       }
       
       //Resets ball to Middle of Canvas
       function ballReset() {
+        if(player1Score == winScore || player2Score == winScore) {
+          player1Score = 0;
+          player2Score = 0;
+          
+          showingWinScreen = true;
+        }
+        
         ballSpeedX = -ballSpeedX;
         ballX = canvas.width/2;
         ballY = canvas.height/2;
@@ -90,19 +149,27 @@
       
       //Moves Ball and Sets Bounds for Bouncing of Ball
       function move() {
-        ballX = ballX + ballSpeedX;
-        ballY = ballY + ballSpeedY;
+        calcMovement();
+        
+        ballX += ballSpeedX;
+        ballY += ballSpeedY;
         
         if(ballX < 0) {
           if(ballY > paddle1Y && ballY < paddle1Y + paddleHeight) {
             ballSpeedX = -ballSpeedX;
           } else {
+            player2Score += 10;
             ballReset();
           }
         }
         
         if(ballX > canvas.width) {
-          ballSpeedX = -ballSpeedX;
+          if(ballY > paddle2Y && ballY < paddle2Y + paddleHeight) {
+            ballSpeedX = -ballSpeedX;
+          } else {
+            player1Score += 10
+            ballReset();
+          }
         }
         
         if(ballY < 0) {
@@ -113,7 +180,6 @@
           ballSpeedY = -ballSpeedY
         }
       }
-      
     </script>
   </body>
 </html>

@@ -29,7 +29,7 @@
       let player2Score = 0;
       //Constant for Winning Score
       let winScore = window.prompt("What would you like the winning score to be? (Multiples of 10)");
-      
+      let showingWin = 0;
       
       
       //Function Calculates Mouse Position
@@ -131,15 +131,33 @@
         canvasContext.fillText(player1Score, 100, 100);
         //Player 2 Score
         canvasContext.fillText(player2Score, canvas.width-100, 100);
+        
+        //Showing Winscreen for Each Player
+        if(showingWin == 1) {
+          alert("You won!");
+          //Resets the ball when someone wins
+          ballReset();
+          showingWin -= 1
+        } else if(showingWin == 2) {
+          alert("Computer won!");
+          //Resets the ball When someone wins
+          ballReset();
+          showingWin -= 2
+        }
       }
       
       //Resets ball to Middle of Canvas
       function ballReset() {
-        if(player1Score == winScore || player2Score == winScore) {
+        if(player1Score == winScore) {
           player1Score = 0;
           player2Score = 0;
           
-          showingWinScreen = true;
+          showingWin += 1;
+        } else if(player2Score == winScore) {
+          player1Score = 0;
+          player2Score = 0;
+          
+          showingWin += 2;
         }
         
         ballSpeedX = -ballSpeedX;

@@ -7,21 +7,26 @@ A = Action
 def cmp(a, b):
 	return ((a > b) - (a < b))
 
+#Defining Textures for the Alien
 standing_texture = Texture('plf:AlienGreen_front')
 walk_textures = [Texture('plf:AlienGreen_walk1'), Texture('plf:AlienGreen_walk2')]
 hit_texture = Texture('plf:AlienGreen_hit')
 
+#Defining subclass for Coin and Sprite Node
 class Coin (SpriteNode):
 	def __init__(self, **kwargs):
 		SpriteNode.__init__(self, 'plf:Item_CoinGold', **kwargs)
 
+#Defining subclass for Meteor and Sprite
 class Meteor (SpriteNode):
 	def __init__(self, **kwargs):
 		img = random.choice(['spc:MeteorBrownBig1', 'spc:MeteorBrownBig2'])
 		SpriteNode.__init__(self, img, **kwargs)
 		self.destroyed = False
 
+#Defining class for Game and Scene
 class Game (Scene):
+    #Defines Background and Game Scene
 	def setup(self):
 		self.background_color = '#004f82'
 		self.ground = Node(parent=self)
@@ -33,6 +38,7 @@ class Game (Scene):
 		self.player = SpriteNode(standing_texture)
 		self.player.anchor_point = (0.5, 0)
 		self.add_child(self.player)
+		#Defines font of score and score label
 		score_font = ('Futura', 40)
 		self.score_label = LabelNode('0', score_font, parent=self)
 		self.score_label.position = (self.size.w/2, self.size.h - 70)
@@ -40,7 +46,8 @@ class Game (Scene):
 		self.items = []
 		self.lasers = []
 		self.new_game()
-	
+		
+	#Defines New Game Parameters
 	def new_game(self):
 		for item in self.items:
 			item.remove_from_parent()
@@ -53,7 +60,8 @@ class Game (Scene):
 		self.player.texture = standing_texture
 		self.speed = 1.0
 		self.game_over = False
-	
+		
+	#Defines new update function when game over returns true
 	def update(self):
 		if self.game_over:
 			return
@@ -62,10 +70,12 @@ class Game (Scene):
 		self.check_laser_collisions()
 		if random.random() < 0.05 * self.speed:
 			self.spawn_item()
-	
+			
+	#Defines function for Touch and what happens when screen receives touch input
 	def touch_began(self, touch):
 		self.shoot_laser()
-	
+		
+	#Updates player attributes and is called in the update function
 	def update_player(self):
 		g = gravity()
 		if abs(g.x) > 0.05:
@@ -82,7 +92,8 @@ class Game (Scene):
 		else:
 			self.player.texture = standing_texture
 			self.walk_step = -1
-	
+			
+	#Defines function that checks for item collision
 	def check_item_collisions(self):
 		player_hitbox = Rect(self.player.position.x - 20, 32, 40, 65)
 		for item in list(self.items):
@@ -96,7 +107,8 @@ class Game (Scene):
 						self.player_hit()
 			elif not item.parent:
 				self.items.remove(item)
-	
+				
+    #Defines function that checks for laser collision
 	def check_laser_collisions(self):
 		for laser in list(self.lasers):
 			if not laser.parent:
@@ -112,7 +124,8 @@ class Game (Scene):
 					self.lasers.remove(laser)
 					laser.remove_from_parent()
 					break
-	
+					
+	#Defines function that destroys meteor and takes in self and meteor parameters
 	def destroy_meteor(self, meteor):
 		sound.play_effect('arcade:Explosion_2', 0.2)
 		meteor.destroyed = True
@@ -124,15 +137,18 @@ class Game (Scene):
 			dx, dy = cos(angle) * 80, sin(angle) * 80
 			m.run_action(A.move_by(dx, dy, 0.6, TIMING_EASE_OUT))
 			m.run_action(A.sequence(A.scale_to(0, 0.6), A.remove()))
-	
+			
+	#Defines function that checks to see if player is hit
 	def player_hit(self):
 		self.game_over = True
 		sound.play_effect('arcade:Explosion_1')
 		self.player.texture = hit_texture
 		self.player.run_action(A.move_by(0, -150))
 		self.run_action(A.sequence(A.wait(2*self.speed), A.call(self.new_game)))
-	
+		
+	#Defines function to check if it should spawn a Meteor or Coin
 	def spawn_item(self):
+	    #Spawns Meteors
 		if random.random() < 0.3 * self.speed:
 			meteor = Meteor(parent=self)
 			meteor.position = (random.uniform(20, self.size.w-20), self.size.h + 30)
@@ -141,6 +157,7 @@ class Game (Scene):
 			meteor.run_action(A.sequence(actions))
 			self.items.append(meteor)
 		else:
+		    #Spawns Coins
 			coin = Coin(parent=self)
 			coin.position = (random.uniform(20, self.size.w-20), self.size.h + 30)
 			d = random.uniform(2.0, 4.0)
@@ -148,7 +165,8 @@ class Game (Scene):
 			coin.run_action(A.sequence(actions))
 			self.items.append(coin)
 		self.speed = min(3, self.speed + 0.005)
-		
+	
+	#Checks to see if Item has been collected or not
 	def collect_item(self, item, value=10):
 		if value > 10:
 			sound.play_effect('digital:PowerUp8')
@@ -159,6 +177,7 @@ class Game (Scene):
 		self.score += value
 		self.score_label.text = str(self.score)
 	
+	#Defines shoot laser function when screen is touched
 	def shoot_laser(self):
 		if len(self.lasers) >= 3:
 			return

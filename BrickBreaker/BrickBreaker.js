@@ -17,15 +17,17 @@ let paddleX = (canvas.width-paddleWidth) / 2;
 let rightPressed = false;
 let leftPressed = false;
 //Brick Variables
-let brickRow = 4;
-let brickColumn = 6;
+let brickRow = 3;
+let brickColumn = 5;
 let brickWidth = 75;
 let brickHeight = 20;
-let brickPadding = 58;
+let brickPadding = 10;
 let brickOffsetTop = 30;
 let brickOffsetLeft = 30;
 //This variable creates an empty array
 let bricks = [];
+//Variable for Score
+let score = 0;
 
 //Loops through empty array and creates an object based on the X and Y coordinates
 for(let c = 0; c<brickColumn; c++) {
@@ -35,9 +37,18 @@ for(let c = 0; c<brickColumn; c++) {
   }
 }
 
-//Add Event Listeners for Keyup and Keydown
+//Add Event Listeners for Keyup, Keydown and Mouse Movement
 document.addEventListener("keydown", keyDownHandler, false);
 document.addEventListener("keyup", keyUpHandler, false);
+document.addEventListener("mousemove", mouseMove, false);
+
+//Function for Mouse Movement relative to canvas.width and canvas offset
+function mouseMove(e) {
+  let relativeX = e.clientX - canvas.offsetLeft;
+  if(relativeX > 0 && relativeX < canvas.width) {
+    paddleX = relativeX - paddleWidth/2;
+  }
+}
 
 //Function for Key Down Handler
 function keyDownHandler(e) {
@@ -59,13 +70,22 @@ function keyUpHandler(e) {
 
 //Function that Detects Collision and Updates Brick Status to 0
 function collisionDetect() {
-  for(var c=0; c<brickColumn; c++) {
-    for(var r=0; r<brickRow; r++) {
-      var b = bricks[c][r];
+  for(let c=0; c<brickColumn; c++) {
+    for(let r=0; r<brickRow; r++) {
+      let b = bricks[c][r];
       if(b.status == 1) {
+        //This line is preventing collision from working.
         if(x > b.x && x < b.x+brickWidth && y > b.y && y < b.y+brickHeight) {
+        //The above line of code is preventing collision from working.
           dy = -dy;
           b.status = 0;
+          score++;
+          //If score equals Number of Bricks, You win.
+          if(score == brickRow*brickColumn) {
+            alert("You win!");
+            document.location.reload();
+            clearInterval(interval);
+          }
         }
       }
     }
@@ -111,12 +131,19 @@ function drawBricks() {
   }
 }
 
+function drawScore() {
+  ctx.font = "16px Arial";
+  ctx.fillStyle = "white";
+  ctx.fillText("Score: " + score, 8, 20);
+}
+
 //This function calls both drawBall and drawPaddle. Also clears canvas per interval.
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBall();
   drawPaddle();
   drawBricks();
+  drawScore();
   collisionDetect();
 }
 
